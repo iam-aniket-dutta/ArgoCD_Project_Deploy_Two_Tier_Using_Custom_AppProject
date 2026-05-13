@@ -1,0 +1,42 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: argo-demo-project
+  namespace: argocd
+spec:
+  description: ArgoCD App Project for Application frontend and backend workloads
+  sourceRepos:
+    - https://github.com/iam-aniket-dutta/ArgoCD_Project_Deploy_Two_Tier_Using_Custom_AppProject.git
+  destinations:
+    - namespace: app1-*
+      server: https://kubernetes.default.svc
+  clusterResourceWhitelist:
+    - group: ""
+      kind: Namespace
+  namespaceResourceWhitelist:
+    - group: apps
+      kind: Deployment
+    - group: ""
+      kind: Service
+    - group: ""
+      kind: ConfigMap
+    - group: ""
+      kind: Secret
+  clusterResourceBlacklist:
+    - group: rbac.authorization.k8s.io
+      kind: ClusterRole
+    - group: rbac.authorization.k8s.io
+      kind: ClusterRoleBinding
+  roles:
+    - name: dev-readonly
+      description: Read-only access for developers
+      policies:
+        - p, proj:argo-demo-project:dev-readonly, applications, get, argo-demo-project/*, allow
+      groups:
+        - app1-devs
+    - name: platform-admin
+      description: Full control for platform team
+      policies:
+        - p, proj:argo-demo-project:platform-admin, applications, *, argo-demo-project/*, allow
+      groups:
+        - platform-team
